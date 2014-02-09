@@ -36,8 +36,7 @@
 			paths: {
 				jquery: '../libs/jquery/jquery-1.10.2',
 				specs: info_tests.path.specs,
-				moduleLoader: '../../src/moduleLoader',
-				'TheService': 'services/TheService/TheService'
+				moduleLoader: '../../src/modulesLoader'
 			}
 		}
 	;
