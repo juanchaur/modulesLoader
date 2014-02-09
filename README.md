@@ -99,3 +99,5 @@ in this moment a nodewebkit application appears with jasmine for run the tests.
 The tests specs are defined on /tests/specs/
 
 Every file that is contained on that folder will be loaded as a spec definition. (May be you need to restart the application to see the additon).
+
+[![Analytics](https://ga-beacon.appspot.com/UA-47717226-1/modulesLoader/home)](https://github.com/igrigorik/ga-beacon)
