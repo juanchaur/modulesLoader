@@ -12,18 +12,20 @@ alone.
 ## You need to follow this directory struture
 
 - **${baseUrl}**/modules
-- **${baseUrl}**/modules/**${ModuleName}**
-- **${baseUrl}**/modules/**${ModuleName}**/controllers
-- **${baseUrl}**/modules/**${ModuleName}**/controllers/**${ModuleName}**.js  ```Principal file to be loaded when you require module!${ModuleName}```
-- **${baseUrl}**/modules/**${ModuleName}**/models ```optional you can reach the files inside here using model!${fileName} see #Important```
-- **${baseUrl}**/modules/**${ModuleName}**/models/**${fileName}**.js
-- **${baseUrl}**/modules/**${ModuleName}**/helpers```optional you can reach the files inside here using helper!${fileName} see Important```
-- **${baseUrl}**/modules/**${ModuleName}**/helpers/**${fileName}**.js
-- **${baseUrl}**/modules/**${ModuleName}**/views ```optional you can reach the files inside here using view!${fileName} see #Important```
-- **${baseUrl}**/modules/**${ModuleName}**/views/**${fileName}**.js
-- **${baseUrl}**/modules/**${ModuleName}**/widget   _optional you can reach the files inside here using widget!**${widgetName}** see #Important_
-- **${baseUrl}**/modules/**${ModuleName}**/widget/**${WidgetName}**/**${WidgetName}**.js
-- **${baseUrl}**/modules/**${ModuleName}**/widget/**${WidgetName}**/**${WidgetName}**.html _widget!**${widgetName}**.html in progress_
+	- **${ModuleName}**
+		- controllers
+			- **${ModuleName}**.js ```Principal file to be loaded when you require module!${ModuleName}```
+		- models ```optional you can reach the files inside here using model!${fileName} see #Important```
+			- **${fileName}**.js
+		- helpers ```optional you can reach the files inside here using helper!${fileName} see Important```
+			- **${fileName}**.js
+		- views ```optional you can reach the files inside here using view!${fileName} see #Important```
+			- **${fileName}**.js
+		- templates ```optional you can reach the files inside here using template!${fileNameWext} see #Important```
+			- **${fileName}**.html
+		- widget ```optional you can reach the files inside here using widget!${widgetName} see #Important```
+			- **${WidgetName}**.js
+			- **${WidgetName}**.html ```widget!**${widgetName}**.html in progress```
 
 ### The basic structure is this
 - Module (Hierarchical)
