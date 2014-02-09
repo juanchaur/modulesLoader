@@ -1,197 +1,224 @@
 /*
- *     (c) 2013 Daniel Goberitz.
+ *     (c) 2013-2014 Daniel Goberitz.
  *     Modules loader may be freely distributed under the MIT license.
  *     For all details and documentation:
  *     https://www.github.com/danyg/modulesLoader
-*/
-/**
- * @fileOverview
- * Plugin de requireJS para cargar modulos facilmente
- * Teneindo modulos con esta estructura
- * 
- * - moduleName/
- *		- controllers/
- *			- [moduleName]Controller.js
- *		- models/
- *		- views/
- * 
- * Es posible gracias a este plugin cargar el fichero [moduleName]Controller.js
- * requiriendo module![moduleName]
- * 
- * el controlador sera el encargado de cargar los modelos y vistas internos que 
- * utilize.
- * 
- * **[moduleName].js
- * 
- *	define('../views/[viewName]', '../models/[modelName]', function(){...});
- * 
+ *
+ * @license ModulesLoader 0.4.0 Copyright (c) 2013-2014 Daniel Goberitz
  * @author Daniel Goberitz <dalgo86@gmail.com>
+ * 
+ * Available via the MIT license.
  */
-requirejs(['jquery'], function($){
-	function getModuleName(req){
-		var localURL = req.toUrl('./'),
-			pos = localURL.indexOf('modules/'),
-			pS, pE, moduleName
-		;
-		if(pos !== -1){
-			pS = pos+8;
-			pE = localURL.indexOf('/', pS);
-			pE = pE === -1 ? undefined : pE;
-			moduleName = localURL.substring(pS, pE);
-		}else{
-			throw 'Llamado "module!" fuera de un modulo';
+(function(){
+	'use strict';
+
+	function parseName(name, glue){
+		var tmp = name.split('/');
+		if(tmp.length === 1){
+			name = name + glue + name;
+		}else if(tmp.length === 2){
+			name = tmp[0] + glue + tmp[1];
+		}else if(tmp.length > 2){
+			throw new URIError('Ilegal module! or service! name \'' + name + '\'');
 		}
 		
-		return moduleName;
+		return name;
 	}
 
-	function getTemplate(url, cbk){
-		if(undefined === getTemplate.cache){
-			getTemplate.cache = {};
-		}
-		
-		if(undefined === getTemplate.cache[url]){
-			$.get(
-				url,
-				function(html){
-					getTemplate.cache[url] = html;
-					cbk(html);
-				},
-				'html'
-			);
+	function parseModuleName(name){
+		if(name.indexOf('modules/') === -1){
+			// module!projects -> modules/projects/controllers/projects.js
+			// module!projects/projectDetails -> modules/projects/controlers/projectDetails.js
+			return 'modules/' + parseName(name, '/controllers/') + '.js';
 		}else{
-			cbk(getTemplate.cache[url]);
-		}
-	}
-	
-	function isNoCacheName(name){
-		if(name.substring(0, 2) === 'E:' || name === '_'){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	function getNormalize(sname){
-		
-		return function (name, normalize){
-			var aName = name,
-				tmp = normalize(name)
-			;
-			if(isNoCacheName(name)){
-				name = 'E:' + sname + Math.random();
-			}
-//console.log('['+sname+'.normalize]', aName, '=>', name);
 			return name;
 		}
-		
-		
-	}
-
-	define('module', [], {
-		load: function (name, req, onload, config) {
-			name = (name.split('|'))[0];
-			if(name === ''){
-				throw 'no name';
-			}
-			var moduleName, toLoad;
-			
-			if(isNoCacheName(name)){
-				moduleName = getModuleName(req);
-//console.log('[module!.load]',name, '=>', moduleName);
-				onload(moduleName); // devuelve el nombre del modulo
-				return;
-			}else{
-				moduleName = name;
-			}
-
-			name = name ? moduleName : name;
-			toLoad = config.paths.modules + moduleName + '/models/' + name + 'Model.js';
-
-			req([toLoad], function (value) {
-				onload(value);
-			});
-		}, 
-		normalize: getNormalize('module!')
-	});
-
+	};
 	
-	define('view', [], {
-		load: function (name, req, onload, config) {
-			name = (name.split('|'))[0];
-			
-			var moduleName = getModuleName(req),
-				toLoad
-			;
-			name = isNoCacheName(name) ? moduleName : name;
-			toLoad = config.paths.modules + moduleName + '/views/' + name + 'View.js';
-
-			req([toLoad], function (value) {
-				onload(value);
-			});
-		},
-		normalize: getNormalize('view!')
-	});
-
-	define('template', [], {
-		load: function (name, req, onload, config) {
-			name = (name.split('|'))[0];
-			
-			var moduleName = getModuleName(req),
-				toLoad
-			;
-			name = isNoCacheName(name) ? moduleName : name;
-			toLoad = config.paths.modules + moduleName + '/templates/' + name + '.html';
-
-			getTemplate(toLoad, function(html){
-				onload(html);
-			});
-		},
-		normalize: getNormalize('template!')
-	});
-
-	define('helper', [], {
-		load: function (name, req, onload, config) {
-			name = (name.split('|'))[0];
-			
-			var moduleName, toLoad;
-			moduleName = getModuleName(req);
-
-			if(isNoCacheName(name)){
-				throw 'Para cargar un helper debe especificar nombre o ruta en el module';
+	var splitDeviceRe =
+      /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?([\\\/])?([\s\S]*?)$/;
+	
+	function isAbsolutePath(path) {
+		return path.charAt(0) === '/';
+	};
+	
+	function normalizeArray(parts, allowAboveRoot) {
+		// if the path tries to go above the root, `up` ends up > 0
+		var up = 0;
+		for (var i = parts.length - 1; i >= 0; i--) {
+			var last = parts[i];
+			if (last === '.') {
+				parts.splice(i, 1);
+			} else if (last === '..') {
+				parts.splice(i, 1);
+				up++;
+			} else if (up) {
+				parts.splice(i, 1);
+				up--;
 			}
+		}
 
-			toLoad = config.paths.modules + moduleName + '/helpers/' + name + '.js';
+		// if the path is allowed to go above the root, restore leading ..s
+		if (allowAboveRoot) {
+			for (; up--; up) {
+				parts.unshift('..');
+			}
+		}
+
+		return parts;
+	}
+	
+	function normalizePath(path){
+		var isAbsolute = isAbsolutePath(path),
+			trailingSlash = path[path.length - 1] === '/',
+			segments = path.split('/'),
+			nonEmptySegments = [];
+
+		// Normalize the path
+		for (var i = 0; i < segments.length; i++) {
+			if (segments[i]) {
+				nonEmptySegments.push(segments[i]);
+			}
+		}
+		path = normalizeArray(nonEmptySegments, !isAbsolute).join('/');
+
+		if (!path && !isAbsolute) {
+			path = '.';
+		}
+		if (path && trailingSlash) {
+			path += '/';
+		}
+
+		path = path.replace(/\\/g, '/');
+
+		return (isAbsolute ? '/' : '') + path;
+	}
+	
+	require.modulePath = function(moduleWithSufix){
+		if(moduleWithSufix.indexOf('module!') === 0){
+			moduleWithSufix = moduleWithSufix.substring(7);
+		}
+		return parseModuleName(moduleWithSufix);
+	};
+
+	define('module', {
+		parseName: parseModuleName,
+		normalize: function(name, normalize){
+			return normalizePath(normalize(name));
+		},
+		load: function (name, req, onload, config) {
+			name = this.parseName(name, req);
+			name = normalizePath(require.toUrl(name));
+			require([name], function (value) {
+				onload(value);
+			});
+		}
+	});
+	
+	// kind --> insider Directory
+	var InsiderKinds = {
+		'model': 'models/',
+		'view': 'views/',
+		'template': 'templates/',
+		'helper': 'helper/',
+		'widget': 'widgets/'
+	};
+	
+	function normalizeInsider(name, normalize, kind){
+		var currentPath = normalize('./'),
+			root = currentPath.match(/(.*\/modules\/[^\/]*\/)/)
+		;
+		if(root && root[1]){
+			if(name.indexOf(root[1]) === -1){
+				return root[1] + InsiderKinds[kind] + name + '.js';
+			}else{
+				return name;
+			}
+		}else{
+			throw URIError(kind + '!' + name + ' unreachable from ' + normalize('./'));
+		}
+	}
+	
+
+	define('model', {
+		normalize: function(name, normalize){
+			return normalizeInsider(name, normalize, 'model');
+		},
+		load: function (name, req, onload, config) {
+			req([req.toUrl(name)], function (value) {
+				onload(value);
+			});
+		}
+	});
+
+	define('view', {
+		normalize: function(name, normalize){
+			return normalizeInsider(name, normalize, 'view');
+		},
+		load: function (name, req, onload, config) {
+			req([req.toUrl(name)], function (value) {
+				onload(value);
+			});
+		}
+	});
+
+	define('helper', {
+		normalize: function(name, normalize){
+			return normalizeInsider(name, normalize, 'helper');
+		},
+		load: function (name, req, onload, config) {
+			req([req.toUrl(name)], function (value) {
+				onload(value);
+			});
+		}
+	});
+
+	define('service', {
+		parseName: function(name){
+			if(name.indexOf('services/') === -1){
+				// service!keyboard -> services/keyboard/keyboard.js
+				// service!db/driver.sqlite3 -> services/db/driver.sqlite3.js
+				return 'services/' + parseName(name, '/') + '.js'; 
+			}else{
+				return name;
+			}
+		},
+		normalize: function(name, normalize){
+			return normalize(this.parseName(name));
+		},
+		load: function (name, req, onload, config) {
+			var toUrl = req.toUrl,
+				toLoad
+			;
+			toLoad = req.toUrl(name);
 
 			req([toLoad], function (value) {
 				onload(value);
 			});
-		},
-		normalize: getNormalize('helper!')
+		}
 	});
-
-	define('mcss', [], {
-		load: function (name, req, onload, config) {
-			name = (name.split('|'))[0];
+	
+	define('widget', {
+		parseName: function(name){
+			if(name.indexOf('widgets/') === -1){
+				var tmp = name.split('/'),
+					moduleName = tmp[0],
+					widgetName = tmp[1]
+				;
+				return 'modules/' + moduleName + '/widgets/' + widgetName + '/' + widgetName;
+			}else{
+				return name;
+			}
+		},
+		normalize: function(name, normalize){
+			return this.parseName(normalize(name));
+		},
+		load: function(name, req, onload, config){
+			name = normalizePath(this.parseName(name));
 			
-			var moduleName = getModuleName(req),
-				toLoad,
-				cssNode
-			;
-			name = isNoCacheName(name) ? moduleName : name;
-			toLoad = config.paths.modules + moduleName + '/css/' + name + '.css';
-
-			$('head').append(
-				cssNode = $('<link>')
-					.attr('href', toLoad)
-					.attr('media', 'all')
-					.attr('rel', 'stylesheet')
-					.attr('type', 'text/css')
-			);
-			onload(cssNode);
-
-		},
-		normalize: getNormalize('mcss!')
+			require([name], function (value) {
+				onload(value);
+			});
+		}
 	});
-
-});
+}());

@@ -1,0 +1,32 @@
+{
+	"name": "NeDBModel",
+	"description": "A Schema Related Data Model For NeDB usable for NodeWebKit",
+	"version": "0.0.1",
+	"main": "index.html",
+	"window": {
+		"icon": "jasmine_icon.png",
+		"toolbar": true,
+		"width": 1024,
+		"height": 768,
+		"frame": true,
+		"resizable": true
+	},
+	"webkit": {
+		"plugin": false
+	},
+	"chromium-args": "--enable-threaded-compositing",
+	"dependencies": {
+		"nedb": "~0.9.4"
+	},
+	"devDependencies": {
+		"nodewebkit": "~0.8.4",
+		"requirejs": "~2.1.10"
+	},
+	"scripts": {
+		"test": "nodewebkit"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/danyg/NeDBModel.git"
+	}
+}
