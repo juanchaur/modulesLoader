@@ -1,44 +1,66 @@
-modulesLoader
+Modules Loader
 =============
 
 Require JS Plugin, for do hMVC
 
-#Use
+#Usage
 
 The idea of this component is to do hMVC (Hierarchical Model View Controller) pattern with some additions.
 Principally thinked for use with knockout and/or backbone, but now is adapted for Durandal. But can be used
 alone.
 
-## You need to follow this directory struture
 
-- **${baseUrl}**/modules
-	- **${ModuleName}**
-		- controllers
-			- **${ModuleName}**.js ```Principal file to be loaded when you require module!${ModuleName}```
-		- models ```optional you can reach the files inside here using model!${fileName} see #Important```
-			- **${fileName}**.js
-		- helpers ```optional you can reach the files inside here using helper!${fileName} see Important```
-			- **${fileName}**.js
-		- views ```optional you can reach the files inside here using view!${fileName} see #Important```
-			- **${fileName}**.js
-		- templates ```optional you can reach the files inside here using template!${fileNameWext} see #Important```
-			- **${fileName}**.html
-		- widget ```optional you can reach the files inside here using widget!${widgetName} see #Important```
-			- **${WidgetName}**.js
-			- **${WidgetName}**.html ```widget!**${widgetName}**.html in progress```
+Directory Structure
+-------------------
 
-### The basic structure is this
+The directory structure that you need to follow is the following:
+
+	{baseUrl}/modules
+	|
+	├── moduleName
+	|   |
+	|   ├── controllers
+	|   |   |
+	|   |   ├── moduleName.js: This is the principal file that will be loaded when you require the module
+	|   |
+	|   ├── models: this is optional
+	|   |   |
+	|   |   ├── modelName.js: you can access theses files by requiring them: model!modelName
+	|   |
+	|   └── views: this is optional
+	|   |   |
+	|   |   ├── viewName.js: you can access theses files by requiring them: view!viewName
+ 	|   |
+	|   └── templates: this is optional
+	|   |   |
+	|   |   ├── moduleName.html you can access theses files by requiring them: template!viewName
+	|   |
+	|   |
+	|   ├── widget: this is optional
+	|   |   |
+	|   |   ├── widgetName.js: you can access theses files by requiring them: widget!widgetName
+	|   |   ├── widgetName.html: you can access theses files by requiring them: widget!widgetName.html
+	|   |
+	|   |
+	|   └── helpers: this is optional
+	|       |
+	|       ├── fileName.js: you can access theses files by requiring them: helper!fileName
+
+
+
+The basic structure
+-------------------
 - Module (Hierarchical)
 	- Controllers
-	- Views			(Classes opr Objects)
+	- Views			(Classes or Objects)
 	- Models
 	- Helpers
-	- Templates		(html things)
-	- Widgets		(Durandal Aproach)
+	- Templates		(html's)
+	- Widgets		(Like Angular's directives)
 
 ### Important
-Everything is private by design.
-_The idea is think in little applications communicated by APIs, defined on the Controllers_
+Everything is private by design. The idea is to think that our webapp is composed of little applications communicated by APIs, defined on the Controllers
+
 - Private things
   - models
   - views
@@ -56,7 +78,7 @@ You can find better examples on the unit tests
 define(['module!Employees'], function(Employees){
 
 	// ...
-	
+
 	Employees.getItems();
 
 });
@@ -66,7 +88,7 @@ define(['module!Employees'], function(Employees){
 define(['model!employees', 'model!companies'], function(employeesModel, companiesModel){
 
 	return {
-	
+
 		getItems: function(){
 			var items = employeesModel.getAll(),
 				companies = companiesModel.getAll(),
@@ -75,7 +97,7 @@ define(['model!employees', 'model!companies'], function(employeesModel, companie
 			for(i = 0; i ${ items.length; i++){
 				// put companies inside items
 			}
-			
+
 			return items;
 		}
 	}
