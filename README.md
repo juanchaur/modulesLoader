@@ -1,13 +1,14 @@
 Modules Loader
 =============
 
-Require JS Plugin, for do hMVC
+moduleLoader it's a [Requirejs](https://github.com/jrburke/requirejs) plugin that helps you to modularize your webapp in a hMVC (Hierarchical Model View Controller)
+
 
 #Usage
 
-The idea of this component is to do hMVC (Hierarchical Model View Controller) pattern with some additions.
-Principally thinked for use with knockout and/or backbone, but now is adapted for Durandal. But can be used
-alone.
+The idea of this plugin is to apply hMVC (Hierarchical Model View Controller) pattern with some additions.
+It was originally programmed for [Knockout](http://knockoutjs.com/) and [Backbone](http://backbonejs.org/) but was adapted for [Durandal](http://durandaljs.com/) as well and can be used without any other framework.
+
 
 
 Directory Structure
@@ -58,7 +59,8 @@ The basic structure
 	- Templates		(html's)
 	- Widgets		(Like Angular's directives)
 
-### Important
+Important
+-------------------
 Everything is private by design. The idea is to think that our webapp is composed of little applications communicated by APIs, defined on the Controllers
 
 - Private things
